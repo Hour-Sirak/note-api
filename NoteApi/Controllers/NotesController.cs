@@ -29,14 +29,7 @@ namespace NoteApi.Controllers
             using var conn = Connection;
             var notes = await conn.QueryAsync<Note>(sql);
 
-            var result = notes.Select(note => new NoteDto
-            {
-                Id = note.Id,
-                Title = note.Title,
-                Content = note.Content,
-                CreatedAt = note.CreatedAt.ToString("yyyy-MM-dd"),
-                UpdatedAt = note.UpdatedAt?.ToString("yyyy-MM-dd")
-            });
+            var result = notes.Select(note => NoteDto.FromModel(note));
 
             return Ok(result);
         }
@@ -51,16 +44,9 @@ namespace NoteApi.Controllers
 
             if (note == null) return NotFound();
 
-            var dto = new NoteDto
-            {
-                Id = note.Id,
-                Title = note.Title,
-                Content = note.Content,
-                CreatedAt = note.CreatedAt.ToString("yyyy-MM-dd"),
-                UpdatedAt = note.UpdatedAt?.ToString("yyyy-MM-dd")
-            };
+            var result = NoteDto.FromModel(note);
 
-            return Ok(dto);
+            return Ok(result);
         }
 
         [HttpPost]
@@ -69,13 +55,28 @@ namespace NoteApi.Controllers
             var sql = @"
                 INSERT INTO Notes (Title, Content, CreatedAt)
                 OUTPUT INSERTED.*
-                VALUES (@Title, @Content, GETDATE());";
+                VALUES (@Title, @Content, CURRENT_TIMESTAMP);";
 
             using var conn = Connection;
-            var newNote = await conn.QuerySingleAsync<NoteDto>(sql, dto);
+            var newNote = await conn.QuerySingleAsync<Note>(sql, dto);
+
+            var result = NoteDto.FromModel(newNote);
 
             return CreatedAtAction(nameof(GetNote), new { newNote.Id }, newNote);
         }
 
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> DeleteNote(int id)
+        {
+            var sql = "DELETE FROM Notes WHERE Id = @Id";
+
+            using var conn = Connection;
+            var rowsAffected = await conn.ExecuteAsync(sql, new { Id = id });
+
+            if (rowsAffected == 0)
+                return NotFound();
+
+            return NoContent(); // 204 No Content
+        }
     }
 }
