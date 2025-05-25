@@ -5,10 +5,10 @@ namespace NoteApi.Models
     public class NoteDto
     {
         public int Id { get; set; }
-        public string Title { get; set; } = null!;
+        public required string Title { get; set; }
         public string? Content { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime? UpdatedAt { get; set; }
+        public required string CreatedAt { get; set; }
+        public string? UpdatedAt { get; set; }
     }
 
     public class NoteCreateDto
