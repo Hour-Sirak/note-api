@@ -18,7 +18,7 @@ namespace NoteApi.Models
                 Title = note.Title,
                 Content = note.Content,
                 CreatedAt = note.CreatedAt.ToString("yyyy-MM-dd"),
-                UpdatedAt = note.UpdatedAt?.ToString("yyyy-MM-dd")
+                UpdatedAt = note.UpdatedAt?.ToString("yyyy-MM-ddTHH:mm:ss.fffZ")
             };    
         }
     }

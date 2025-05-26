@@ -8,7 +8,7 @@ builder.Services.AddCors(options =>
         policy =>
         {
             policy.AllowAnyHeader().AllowAnyMethod();
-            policy.WithOrigins("http://localhost:5173");
+            policy.WithOrigins("http://localhost:5173", "https://hour-sirak.github.io");
         });
 });
 builder.Services.AddControllers();

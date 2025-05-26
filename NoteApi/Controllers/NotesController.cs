@@ -55,14 +55,14 @@ namespace NoteApi.Controllers
             var sql = @"
                 INSERT INTO Notes (Title, Content, CreatedAt)
                 OUTPUT INSERTED.*
-                VALUES (@Title, @Content, CURRENT_TIMESTAMP);";
+                VALUES (@Title, @Content, GETUTCDATE());";
 
             using var conn = Connection;
             var newNote = await conn.QuerySingleAsync<Note>(sql, dto);
 
             var result = NoteDto.FromModel(newNote);
 
-            return CreatedAtAction(nameof(GetNote), new { newNote.Id }, newNote);
+            return CreatedAtAction(nameof(GetNote), new { result.Id }, result);
         }
 
         [HttpDelete("{id}")]
@@ -77,6 +77,32 @@ namespace NoteApi.Controllers
                 return NotFound();
 
             return NoContent(); // 204 No Content
+        }
+
+        [HttpPatch("{id}")]
+        public async Task<ActionResult<NoteDto>> UpdateNote(int id, NoteCreateDto dto)
+        {
+            var sql = @"
+                UPDATE Notes
+                SET Title = @Title,
+                    Content = @Content,
+                    UpdatedAt = GETUTCDATE()
+                OUTPUT INSERTED.*
+                WHERE Id = @Id";
+
+            using var conn = Connection;
+            var updatedNote = await conn.QuerySingleOrDefaultAsync<Note>(sql, new
+                {
+                    Id = id,
+                    Title = dto.Title,
+                    Content = dto.Content
+                });
+
+            if (updatedNote == null) return NotFound();
+
+            var result = NoteDto.FromModel(updatedNote);
+
+            return Ok(result);
         }
     }
 }
